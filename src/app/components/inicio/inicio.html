@@ -1,0 +1,52 @@
+<nav class="navbar navbar-dark bg-dark mb-4 p-3">
+  <div class="container d-flex justify-content-between">
+    <span class="navbar-brand mb-0 h1">🐶 PETSHOP</span>
+    
+    <div>
+      <button *ngIf="esAdmin" class="btn btn-warning me-2" (click)="irAdmin()">
+        <i class="fas fa-cogs"></i> Gestionar Productos
+      </button>
+
+      <button class="btn btn-outline-light" onclick="sessionStorage.clear(); location.href='/login'">
+        Salir
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-4 mb-4">
+  <div class="alert alert-success shadow-sm d-flex align-items-center" role="alert">
+    <i class="fas fa-paw fa-2x me-3"></i>
+    <div>
+      <h4 class="alert-heading mb-0">¡Bienvenido, {{ nombreUsuario }}!</h4>
+      <p class="mb-0 text-muted" style="font-size: 0.9rem;">Nos alegra verte de nuevo en Petshop Cibertec.</p>
+    </div>
+  </div>
+</div>
+
+<div class="container mt-4">
+  <h2 class="text-center mb-4">Nuestros Productos</h2>
+
+  <div class="row">
+    <div class="col-md-4 mb-4" *ngFor="let p of productos">
+      
+      <div class="card h-100 shadow-sm">
+        <img [src]="p.imagenUrl" class="card-img-top" style="height: 200px; object-fit: cover;">
+        
+        <div class="card-body">
+          <h5 class="card-title">{{ p.nombre }}</h5>
+          <p class="card-text text-muted">{{ p.descripcion }}</p>
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="h5 text-primary">S/ {{ p.precio }}</span>
+            <span class="badge bg-success" *ngIf="p.stock > 0">Stock: {{ p.stock }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  
+  <div *ngIf="productos.length === 0" class="alert alert-info text-center">
+    No hay productos registrados en la Base de Datos.
+  </div>
+</div>
