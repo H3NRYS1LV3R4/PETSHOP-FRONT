@@ -18,7 +18,6 @@ export class AdminProductos implements OnInit {
 
   productos: any[] = [];
   
-  // Objeto para el formulario (Nuevo/Editar)
   productoActual: any = {
     id: null,
     nombre: '',
@@ -39,10 +38,8 @@ export class AdminProductos implements OnInit {
     });
   }
 
-  // Guardar (Sirve para Crear O Editar)
   guardarProducto() {
     if (this.productoActual.id) {
-      // Si tiene ID, es EDITAR
       this.productoService.actualizar(this.productoActual.id, this.productoActual).subscribe({
         next: () => {
           alert('Producto actualizado correctamente');
@@ -52,7 +49,6 @@ export class AdminProductos implements OnInit {
         error: (e) => alert('Error al actualizar')
       });
     } else {
-      // Si no tiene ID, es CREAR NUEVO
       this.productoService.crear(this.productoActual).subscribe({
         next: () => {
           alert('Producto creado correctamente');
@@ -64,7 +60,6 @@ export class AdminProductos implements OnInit {
     }
   }
 
-  // Cargar datos en el formulario para editar
   editar(producto: any) {
     this.productoActual = { ...producto }; // Copia los datos al formulario
   }

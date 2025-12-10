@@ -1,13 +1,13 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // Para leer los inputs
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth'; // Importación correcta
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule], // Importamos módulos necesarios
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
@@ -23,49 +23,35 @@ export class Login {
     password: ''
   };
 
-  // 2. NUEVO: Datos para REGISTRO
   usuarioRegistro = {
     username: '',
     email: '',
-    password: '',
-    roles: ['user'] // Enviamos rol de usuario por defecto
+    password: ''
   };
 
-  // FUNCIÓN PARA CAMBIAR ENTRE PANELES
   togglePanels() {
     this.isActive = !this.isActive;
   }
 
   entrar() {
-    console.log("Enviando:", this.usuarioLogin);
+    const credenciales = btoa(this.usuarioLogin.username + ':' + this.usuarioLogin.password);
+    const basicAuth = 'Basic ' + credenciales;
 
-    this.authService.login(this.usuarioLogin).subscribe({
-      next: (respuesta: any) => {
-        console.log('Login OK:', respuesta);
-        sessionStorage.setItem('token', respuesta.token);
-        sessionStorage.setItem('roles', JSON.stringify(respuesta.roles)); 
-        sessionStorage.setItem('username', respuesta.username);
-
-        this.router.navigate(['/inicio']); // Redirigir
-      },
-      error: (error: any) => {
-        console.error('Error:', error);
-        alert('Error: Usuario o contraseña incorrectos');
-      }
-    });
+    sessionStorage.setItem('auth', basicAuth);
+    sessionStorage.setItem('username', this.usuarioLogin.username);
+    
+    this.router.navigate(['/admin-productos']);
   }
 
   registrarse() {
-    console.log("Enviando registro:", this.usuarioRegistro);
-    
     this.authService.registro(this.usuarioRegistro).subscribe({
       next: (respuesta: any) => {
         alert("¡Cuenta creada con éxito! Ahora inicia sesión.");
-        this.togglePanels(); // Movemos el panel para que haga Login
+        this.togglePanels();
       },
       error: (error: any) => {
         console.error(error);
-        alert("Error al registrarse. El usuario o email ya existen.");
+        alert("Error al registrarse. Verifica los datos.");
       }
     });
   }

@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Producto } from '../../services/producto';
-import { Router } from '@angular/router'; // Importamos Router
+import { Router } from '@angular/router'; 
 
 @Component({
   selector: 'app-inicio',
@@ -13,40 +13,24 @@ import { Router } from '@angular/router'; // Importamos Router
 export class Inicio implements OnInit {
 
   private productoService = inject(Producto);
-  private router = inject(Router); // Inyectamos Router para navegar
+  private router = inject(Router);
   
   productos: any[] = [];
   esAdmin: boolean = false;
-  nombreUsuario: string = ''; // Variable para saber si es jefe
+  nombreUsuario: string = '';
 
   ngOnInit(): void {
     this.cargarProductos();
-    this.verificarRol();
-    this.verificarUsuario();
+    this.verificarSesion();
   }
 
-  verificarUsuario() {
-    const usuarioGuardado = sessionStorage.getItem('username');
-    if (usuarioGuardado) {
-      this.nombreUsuario = usuarioGuardado; // Lo guardamos en la variable
-    }
-
-    // Leemos los roles
-    const rolesGuardados = sessionStorage.getItem('roles');
-    if (rolesGuardados) {
-      const roles = JSON.parse(rolesGuardados);
-      this.esAdmin = roles.includes('ADMIN'); 
-    }
-  }
-
-  verificarRol() {
-    // Leemos los roles de la memoria
-    const rolesGuardados = sessionStorage.getItem('roles');
+  verificarSesion() {
+    const auth = sessionStorage.getItem('auth');
     
-    if (rolesGuardados) {
-      // Si existen, buscamos si tiene "ADMIN"
-      const roles = JSON.parse(rolesGuardados);
-      this.esAdmin = roles.includes('ADMIN'); 
+    if (auth) {
+      this.esAdmin = true;
+    } else {
+      this.esAdmin = false;
     }
   }
 
@@ -56,13 +40,21 @@ export class Inicio implements OnInit {
         this.productos = data;
       },
       error: (error: any) => {
-        console.error('Error:', error);
+        console.error('Error al cargar productos:', error);
       }
     });
   }
 
-  // Función para ir al panel de admin (que crearemos pronto)
-  irAdmin() {
-    this.router.navigate(['/admin-productos']);
+  irAAdmin() {
+    if (this.esAdmin) {
+      this.router.navigate(['/admin-productos']);
+    } else {
+      this.router.navigate(['/login']);
+    }
+  }
+
+  cerrarSesion() {
+    sessionStorage.clear();
+    window.location.reload();
   }
 }
