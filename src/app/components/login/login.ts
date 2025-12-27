@@ -2,7 +2,10 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth';
+import { Auth } from '../../services/auth'; // Sincronizado con tu clase Auth
+import { LoginUser } from '../../dto/login-user';
+import { NuevoUsuario } from '../../dto/nuevo-usuario';
+import { JwtDto } from '../../dto/jwt-dto';
 
 @Component({
   selector: 'app-login',
@@ -13,46 +16,84 @@ import { AuthService } from '../../services/auth';
 })
 export class Login {
 
-  private authService = inject(AuthService);
+  private authService = inject(Auth); // Inyectamos tu clase Auth
   private router = inject(Router);
 
-  isActive = false;
+  // Variable para la animación del panel deslizante del HTML
+  isActive = false; 
 
-  usuarioLogin = {
+  // Objetos para el enlace de datos (ngModel)
+  usuarioLogin: LoginUser = {
     username: '',
     password: ''
   };
 
-  usuarioRegistro = {
+  usuarioRegistro: NuevoUsuario = {
     username: '',
     email: '',
     password: ''
   };
 
-  togglePanels() {
+  errorMessage = '';
+
+  /**
+   * Cambia el estado para activar la animación de paneles en el HTML
+   */
+  togglePanels(): void {
     this.isActive = !this.isActive;
+    this.errorMessage = '';
   }
 
-  entrar() {
-    const credenciales = btoa(this.usuarioLogin.username + ':' + this.usuarioLogin.password);
-    const basicAuth = 'Basic ' + credenciales;
+  /**
+   * Ejecuta el inicio de sesión
+   */
+  entrar(): void {
+    if (!this.usuarioLogin.username || !this.usuarioLogin.password) {
+      this.errorMessage = 'Por favor, ingrese usuario y contraseña';
+      return;
+    }
 
-    sessionStorage.setItem('auth', basicAuth);
-    sessionStorage.setItem('username', this.usuarioLogin.username);
-    
-    this.router.navigate(['/admin-productos']);
-  }
-
-  registrarse() {
-    this.authService.registro(this.usuarioRegistro).subscribe({
-      next: (respuesta: any) => {
-        alert("¡Cuenta creada con éxito! Ahora inicia sesión.");
-        this.togglePanels();
+    this.authService.login(this.usuarioLogin).subscribe({
+      next: (data: JwtDto) => {
+        // Guardamos el token usando el método de tu servicio
+        this.authService.setToken(data.token);
+        
+        // Redirigimos al inicio
+        this.router.navigate(['/inicio']);
       },
-      error: (error: any) => {
-        console.error(error);
-        alert("Error al registrarse. Verifica los datos.");
+      error: (err) => {
+        this.errorMessage = 'Credenciales inválidas. Intente de nuevo.';
+        console.error('Error en login:', err);
       }
     });
+  }
+
+  /**
+   * Ejecuta el registro de un nuevo usuario
+   */
+  registrarse(): void {
+    if (!this.usuarioRegistro.username || !this.usuarioRegistro.email || !this.usuarioRegistro.password) {
+      alert('Debe completar todos los campos para el registro');
+      return;
+    }
+
+    // Usamos el método .nuevo() de tu servicio Auth
+    this.authService.nuevo(this.usuarioRegistro).subscribe({
+      next: (res) => {
+        alert('¡Registro exitoso! Ya puede iniciar sesión.');
+        this.isActive = false; // Movemos el panel de vuelta al login
+        this.limpiarFormularios();
+      },
+      error: (err) => {
+        this.errorMessage = 'Error al intentar registrar el usuario';
+        console.error('Error en registro:', err);
+      }
+    });
+  }
+
+  private limpiarFormularios() {
+    this.usuarioLogin = { username: '', password: '' };
+    this.usuarioRegistro = { username: '', email: '', password: '' };
+    this.errorMessage = '';
   }
 }

@@ -1,41 +1,51 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Productos } from '../dto/productos'; // Importamos el DTO que creaste
 
 @Injectable({
   providedIn: 'root'
 })
 export class Producto {
 
-  private http = inject(HttpClient);
-  
-  private apiUrl = 'http://localhost:8080/api/productos';
+  // URL de la API (ajustada al puerto 8080 del backend)
+  productoURL = 'http://localhost:8080/api/productos';
 
-  constructor() { }
+  constructor(private httpClient: HttpClient) { }
 
-  private getHeaders() {
-    const auth = sessionStorage.getItem('auth');
-    return {
-      headers: new HttpHeaders({
-        'Authorization': auth || ''
-      })
-    };
+  /**
+   * Obtiene la lista de todos los productos.
+   * El interceptor se encargará de agregar el token JWT automáticamente.
+   */
+  public lista(): Observable<Productos[]> {
+    return this.httpClient.get<Productos[]>(this.productoURL);
   }
 
-  obtenerTodos(): Observable<any> {
-    return this.http.get(this.apiUrl, this.getHeaders());
+  /**
+   * Obtiene un producto por su ID.
+   */
+  public detalle(id: number): Observable<Productos> {
+    return this.httpClient.get<Productos>(`${this.productoURL}/${id}`);
   }
 
-  crear(producto: any): Observable<any> {
-    return this.http.post(this.apiUrl, producto, this.getHeaders());
+  /**
+   * Crea un nuevo producto.
+   */
+  public save(producto: Productos): Observable<any> {
+    return this.httpClient.post<any>(this.productoURL, producto);
   }
 
-  actualizar(id: number, producto: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${id}`, producto, this.getHeaders());
+  /**
+   * Actualiza un producto existente.
+   */
+  public update(id: number, producto: Productos): Observable<any> {
+    return this.httpClient.put<any>(`${this.productoURL}/${id}`, producto);
   }
 
-  eliminar(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`, this.getHeaders());
+  /**
+   * Elimina un producto por su ID.
+   */
+  public delete(id: number): Observable<any> {
+    return this.httpClient.delete<any>(`${this.productoURL}/${id}`);
   }
-
 }
